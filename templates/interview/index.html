@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interviewer</title>
+</head>
+<body>
+    <h1>AI Interviewer</h1>
+    <div>
+        <label for="user-answer">Your Answer:</label>
+        <textarea id="user-answer" rows="4" cols="50"></textarea>
+    </div>
+    <button onclick="submitAnswer()">Submit</button>
+
+    <h3>Refined Answer:</h3>
+    <p id="refined-answer"></p>
+
+    <script>
+        function submitAnswer() {
+            const userAnswer = document.getElementById('user-answer').value;
+
+            fetch('/interview/ask-question/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({user_answer: userAnswer})
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('refined-answer').innerText = data.refined_answer;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

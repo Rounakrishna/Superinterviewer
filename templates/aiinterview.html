@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Interviewer</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>AI Voice Interviewer</h1>
+    <button id="startButton">Start</button>
+    <button id="stopButton" disabled>Stop</button>
+    <div id="outputContainer"></div>
+
+    <script>
+        let recognition;
+
+        $(document).ready(function() {
+            $('#startButton').click(startRecognition);
+            $('#stopButton').click(stopRecognition);
+        });
+
+        function startRecognition() {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.onresult = processRecognitionResult;
+            recognition.start();
+            $('#startButton').prop('disabled', true);
+            $('#stopButton').prop('disabled', false);
+        }
+
+        function stopRecognition() {
+            recognition.stop();
+            $('#startButton').prop('disabled', false);
+            $('#stopButton').prop('disabled', true);
+        }
+
+        function processRecognitionResult(event) {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    transcript += event.results[i][0].transcript;
+                } else {
+                    transcript += event.results[i][0].transcript;
+                }
+            }
+
+            if (transcript) {
+                sendTextToServer(transcript);
+            }
+        }
+
+        function sendTextToServer(text) {
+            $.ajax({
+                url: '/interview/ask-question/',
+                type: 'POST',
+                contentType: 'application/json',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                data: JSON.stringify({ user_answer: text }),
+                success: function(response) {
+                    displayResponse(response.refined_answer);
+                    speakResponse(response.refined_answer);
+                },
+                error: function(xhr, status, error) {
+                    displayError(error);
+                }
+            });
+        }
+
+        function displayResponse(response) {
+            $('#outputContainer').append('<p><strong>AI:</strong> ' + response + '</p>');
+        }
+
+        function speakResponse(response) {
+            const speech = new SpeechSynthesisUtterance(response);
+            window.speechSynthesis.speak(speech);
+        }
+
+        function displayError(error) {
+            $('#outputContainer').append('<p><strong>Error:</strong> ' + error + '</p>');
+        }
+    </script>
+</body>
+</html>

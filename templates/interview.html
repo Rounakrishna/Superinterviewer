@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Interview</title>
+</head>
+<body>
+    <h1>Mock Interview</h1>
+    <p>User ID: {{ interview_session.user_id }}</p>
+    <h2>Interview Questions</h2>
+    <ol>
+        {% for question in interview_session.questions %}
+        <li>{{ question }}</li>
+        <form method="post" action="{{ url_for('submit_response', user_id=interview_session.user_id, question_index=loop.index0) }}">
+            <textarea name="response" rows="4" cols="50"></textarea><br>
+            <button type="submit">Submit</button>
+        </form>
+        {% endfor %}
+    </ol>
+    <h2>Your Responses</h2>
+    <ol>
+        {% for response in interview_session.responses %}
+        <li>{{ response }}</li>
+        {% endfor %}
+    </ol>
+</body>
+</html>
